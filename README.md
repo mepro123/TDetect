@@ -1,4 +1,4 @@
-# TDetect v1.0
+# TDetect 
 
 ## Installation Requirements
 
