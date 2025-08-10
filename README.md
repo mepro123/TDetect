@@ -1,6 +1,6 @@
 # TDetect 
 
-## Installation Requirements
+## Installation Guide
 
 ### Install the following Python packages:
 
