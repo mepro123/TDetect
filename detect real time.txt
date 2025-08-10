@@ -1,0 +1,106 @@
+import sys
+import numpy as np
+import mss
+import torch
+from PyQt5 import QtCore, QtGui, QtWidgets
+
+class OverlayWindow(QtWidgets.QWidget):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle("Screen Overlay")
+        self.setWindowFlags(
+            QtCore.Qt.WindowStaysOnTopHint |
+            QtCore.Qt.FramelessWindowHint |
+            QtCore.Qt.WindowTransparentForInput |
+            QtCore.Qt.Tool
+        )
+        self.setAttribute(QtCore.Qt.WA_TranslucentBackground)
+        self.screen = QtWidgets.QApplication.primaryScreen()
+        size = self.screen.size()
+        self.setGeometry(0, 0, size.width(), size.height())
+
+        self.detections = []
+
+    def setDetections(self, detections):
+        self.detections = detections
+        self.update()
+
+    def paintEvent(self, event):
+        painter = QtGui.QPainter(self)
+        painter.setRenderHint(QtGui.QPainter.Antialiasing)
+        painter.setPen(QtGui.QPen(QtGui.QColor(0, 255, 0, 200), 3))
+        painter.setFont(QtGui.QFont('Arial', 12))
+
+        for (x1, y1, x2, y2, conf) in self.detections:
+            painter.drawRect(x1, y1, x2 - x1, y2 - y1)
+            painter.drawText(x1, y1 - 10, f'Person {conf:.2f}')
+
+
+def main():
+    app = QtWidgets.QApplication(sys.argv)
+
+    # Load YOLOv5 nano model once, prefer GPU if available
+    device = 'cuda' if torch.cuda.is_available() else 'cpu'
+    model = torch.hub.load('ultralytics/yolov5', 'yolov5n', pretrained=True).to(device)
+    model.eval()
+
+    sct = mss.mss()
+    monitor = sct.monitors[1]
+    screen_width = monitor['width']
+    screen_height = monitor['height']
+
+    overlay = OverlayWindow()
+    overlay.show()
+
+    frame_skip = 5  # Run detection every 5 frames
+    frame_count = 0
+    detections = []
+
+    timer = QtCore.QTimer()
+    timer.setInterval(30)  # ~33 FPS update
+
+    def update():
+        nonlocal frame_count, detections
+
+        img = np.array(sct.grab(monitor))
+        frame = img[:, :, :3]  # BGRA to BGR
+
+        if frame_count % frame_skip == 0:
+            # Resize for faster inference
+            small_frame = cv2.resize(frame, (640, int(frame.shape[0] * 640 / frame.shape[1])))
+
+            # Convert BGR to RGB and to tensor
+            img_rgb = small_frame[:, :, ::-1]
+
+            # Inference
+            with torch.no_grad():
+                results = model(img_rgb)
+
+            scale_x = screen_width / small_frame.shape[1]
+            scale_y = screen_height / small_frame.shape[0]
+
+            detections = []
+            for *box, conf, cls in results.xyxy[0]:
+                if int(cls) == 0:  # Person class
+                    x1, y1, x2, y2 = box
+                    x1 = int(x1 * scale_x)
+                    y1 = int(y1 * scale_y)
+                    x2 = int(x2 * scale_x)
+                    y2 = int(y2 * scale_y)
+                    detections.append((x1, y1, x2, y2, conf.item()))
+
+            overlay.setDetections(detections)
+        else:
+            # Reuse old detections (you can add interpolation here if needed)
+            overlay.setDetections(detections)
+
+        frame_count += 10
+
+    timer.timeout.connect(update)
+    timer.start()
+
+    sys.exit(app.exec_())
+
+if __name__ == '__main__':
+    import cv2
+    main()
