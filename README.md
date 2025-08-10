@@ -1,8 +1,17 @@
-# TDetect V 1.0
+# TDetect v1.0
 
-## To Install TDetect you must have the following:
-### Python | pip install opencv-python torch torchvision torchaudio
-### Seaborn | pip install seaborn
-### Ultralytics | pip install ultralytics
+## Requirements for Installation:
+- Python packages:
+  opencv-python, torch, torchvision, torchaudio  
+  Install with:  
+  pip install opencv-python torch torchvision torchaudio
 
-## Run these in Command Prompt ↑
+- Seaborn:  
+  Install with:  
+  pip install seaborn
+
+- Ultralytics:  
+  Install with:  
+  pip install ultralytics
+
+## To install, run the above commands in your Command Prompt.
