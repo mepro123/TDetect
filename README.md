@@ -1,44 +1,17 @@
 # TDetect v1.0
 
-## Requirements for Installation (Video):
-- Python packages:
-  opencv-python, torch, torchvision, torchaudio  
-  Install with:  
-  pip install opencv-python torch torchvision torchaudio
+## Installation Requirements
 
-- Seaborn:  
-  Install with:  
-  pip install seaborn
+### For Video Processing:
+Install the following Python packages:
 
-- Ultralytics:  
-  Install with:  
-  pip install ultralytics
+pip install opencv-python torch torchvision torchaudio seaborn ultralytics
 
-  ## Requirements for Installation (Real Time):
-- Python packages:
-  opencv-python, torch, torchvision, torchaudio  
-  Install with:  
-  pip install opencv-python torch torchvision torchaudio
+### For Real-Time Processing:
+Install all packages for video processing plus these additional ones:
 
-- Seaborn:  
-  Install with:  
-  pip install seaborn
+pip install mss PyQt5 pywin32
 
-- Ultralytics:  
-  Install with:  
-  pip install ultralytics
-  
-- mss:
-  Install with:
-  pip install mss
-  
-- PyQt5:
-  Install with:
-  pip install PyQt5 mss torch torchvision
-  
-- pywin32:
-  Install with:
-  pip install pywin32
+---
 
-
-## To install, run the above commands in your Command Prompt.
+Note: Run the above commands in your Command Prompt or terminal to set up TDetect properly.
